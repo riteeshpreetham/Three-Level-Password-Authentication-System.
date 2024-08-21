@@ -581,3 +581,200 @@ function validateColorPassword() {
 </script>
 </body>
 </html>
+//////////////////////////////////level3/////////////////
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Picture Password</title>
+    <style>
+    /* styles.css */
+    body {
+        font-family: 'Roboto', sans-serif;
+        background-color: #121212;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        overflow: hidden;
+        color: #fff;
+    }
+
+    .container {
+        background-color: #1f1f1f;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
+        text-align: center;
+        width: 350px;
+    }
+
+    h2 {
+        margin-bottom: 20px;
+        font-size: 1.5rem;
+        color: #ff6f61;
+    }
+
+    .level {
+        margin-bottom: 20px;
+    }
+
+    input[type="file"] {
+        margin: 20px 0;
+    }
+
+    .image-container {
+        position: relative;
+        margin-top: 20px;
+    }
+
+    .password-image {
+        width: 100%;
+        max-height: 300px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    }
+
+    button {
+        width: 100%;
+        padding: 12px;
+        background-color: #ff6f61;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+
+    button:hover {
+        background-color: #ffab91;
+        transform: scale(1.05);
+    }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Level 3: Picture Password</h2>
+
+        <!-- Picture Password Setup -->
+        <div id="level3-setup" class="level">
+            <h3>Set Your Picture Password</h3>
+            <input type="file" id="pictureInput" accept="image/*" onchange="loadPicture('setup')">
+            <div id="setupContainer" class="image-container" style="display:none;" onclick="setClickPoint(event)">
+                <img id="setupImage" src="" alt="Setup Picture" class="password-image">
+            </div>
+            <button onclick="savePasswordPoints()">Save Password</button>
+        </div>
+
+        <!-- Picture Password Login -->
+        <div id="level3-login" class="level" style="display:none;">
+            <h3>Login with Your Picture Password</h3>
+            <input type="file" id="loginPictureInput" accept="image/*" onchange="loadPicture('login')">
+            <div id="loginContainer" class="image-container" style="display:none;" onclick="checkClickPoint(event)">
+                <img id="loginImage" src="" alt="Login Picture" class="password-image">
+            </div>
+            <button onclick="validatePicturePassword()">Submit</button>
+        </div>
+
+        <!-- Success Message -->
+        <div id="successMessage" style="display:none;">
+            <h3>Access Granted!</h3>
+            <p>You have successfully set and validated the picture password.</p>
+        </div>
+    </div>
+
+    <script>
+    // scripts.js
+
+    let passwordPoints = []; // Array to store click points for the password
+    let loginPoints = []; // Array to store click points during login
+
+    // Load picture and display it for setup or login
+    function loadPicture(mode) {
+        const fileInput = mode === 'setup' ? document.getElementById('pictureInput') : document.getElementById('loginPictureInput');
+        const container = mode === 'setup' ? document.getElementById('setupContainer') : document.getElementById('loginContainer');
+        const image = mode === 'setup' ? document.getElementById('setupImage') : document.getElementById('loginImage');
+
+        if (fileInput.files && fileInput.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                image.src = e.target.result;
+                container.style.display = 'block';
+            };
+            reader.readAsDataURL(fileInput.files[0]);
+        }
+    }
+
+    // Set click points for picture password during setup
+    function setClickPoint(event) {
+        const rect = event.target.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+
+        passwordPoints.push({ x, y });
+
+        const point = document.createElement("div");
+        point.style.position = "absolute";
+        point.style.left = `${x}px`;
+        point.style.top = `${y}px`;
+        point.style.width = "10px";
+        point.style.height = "10px";
+        point.style.backgroundColor = "red";
+        point.style.borderRadius = "50%";
+        event.target.parentNode.appendChild(point);
+    }
+
+    // Save the set points and prepare for login
+    function savePasswordPoints() {
+        document.getElementById('level3-setup').style.display = 'none';
+        document.getElementById('level3-login').style.display = 'block';
+    }
+
+    // Check click points during login
+    function checkClickPoint(event) {
+        const rect = event.target.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+
+        loginPoints.push({ x, y });
+
+        const point = document.createElement("div");
+        point.style.position = "absolute";
+        point.style.left = `${x}px`;
+        point.style.top = `${y}px`;
+        point.style.width = "10px";
+        point.style.height = "10px";
+        point.style.backgroundColor = "blue";
+        point.style.borderRadius = "50%";
+        event.target.parentNode.appendChild(point);
+    }
+
+    // Validate the picture password by comparing points
+    function validatePicturePassword() {
+        if (loginPoints.length !== passwordPoints.length) {
+            alert("Incorrect Picture Password! Please try again.");
+            loginPoints = []; // Reset the selection
+            return;
+        }
+
+        const tolerance = 10; // Pixel tolerance for click points
+        const isValid = passwordPoints.every((point, index) => {
+            return Math.abs(point.x - loginPoints[index].x) < tolerance &&
+                   Math.abs(point.y - loginPoints[index].y) < tolerance;
+        });
+
+        if (isValid) {
+            document.getElementById('level3-login').style.display = 'none';
+            document.getElementById('successMessage').style.display = 'block';
+        } else {
+            alert("Incorrect Picture Password! Please try again.");
+            loginPoints = []; // Reset the selection
+        }
+    }
+    </script>
+</body>
+</html>
