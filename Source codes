@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three-Level Password System</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+    /* styles.css */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f2f2f2;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.container {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 300px;
+}
+
+h2 {
+    margin-bottom: 20px;
+}
+
+.level {
+    margin-bottom: 20px;
+}
+
+input[type="password"], input[type="file"], button {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+.colors {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+}
+
+.color-btn {
+    width: 50px;
+    height: 50px;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.red {
+    background-color: red;
+}
+
+.green {
+    background-color: green;
+}
+
+.blue {
+    background-color: blue;
+</style>
+</head>
+<body>
+    <div class="container">
+        <h2>Three-Level Password System</h2>
+
+        <!-- Level 1: Text Password -->
+        <div id="level1" class="level">
+            <h3>Level 1: Enter Your Text Password</h3>
+            <input type="password" id="textPassword" placeholder="Enter Password">
+            <button onclick="validateTextPassword()">Next</button>
+        </div>
+
+        <!-- Level 2: Color Combination Password -->
+        <div id="level2" class="level" style="display:none;">
+            <h3>Level 2: Select Color Combination</h3>
+            <div class="colors">
+                <button class="color-btn red" onclick="selectColor('red')"></button>
+                <button class="color-btn green" onclick="selectColor('green')"></button>
+                <button class="color-btn blue" onclick="selectColor('blue')"></button>
+            </div>
+            <button onclick="validateColorPassword()">Next</button>
+        </div>
+
+        <!-- Level 3: Picture Password -->
+        <div id="level3" class="level" style="display:none;">
+            <h3>Level 3: Select Your Picture Password</h3>
+            <input type="file" id="pictureInput" accept="image/*" onchange="loadPicture()">
+            <div id="imageContainer" class="image-container" onclick="setClickPoint(event)" style="display:none;">
+                <img id="passwordImage" src="" alt="Picture Password" class="password-image">
+            </div>
+            <button onclick="validatePicturePassword()">Submit</button>
+        </div>
+
+        <!-- Success Message -->
+        <div id="successMessage" style="display:none;">
+            <h3>Access Granted!</h3>
+            <p>You have successfully passed all levels of authentication.</p>
+        </div>
+    </div>
+
+    <script src="scripts.js"></script>
+    <script>
+/* scripts.js */
+
+// Variables to store password information
+let selectedColors = [];
+let clickPoints = [];
+
+// Level 1: Validate Textual Password
+function validateTextPassword() {
+    const password = document.getElementById("textPassword").value;
+
+    // Here, you would typically verify the password against a backend
+    if (password === "correctPassword") { // Replace "correctPassword" with your desired password
+        document.getElementById("level1").style.display = "none";
+        document.getElementById("level2").style.display = "block";
+    } else {
+        alert("Incorrect Password! Please try again.");
+    }
+}
+
+// Level 2: Select Color Combination
+function selectColor(color) {
+    if (selectedColors.length < 3) {
+        selectedColors.push(color);
+    }
+}
+
+function validateColorPassword() {
+    const correctColors = ["red", "green", "blue"]; // Replace with your desired combination
+
+    if (selectedColors.length === 3 && selectedColors.every((color, index) => color === correctColors[index])) {
+        document.getElementById("level2").style.display = "none";
+        document.getElementById("level3").style.display = "block";
+    } else {
+        alert("Incorrect Color Combination! Please try again.");
+        selectedColors = []; // Reset the selection
+    }
+}
+
+// Level 3: Picture Password
+function loadPicture() {
+    const fileInput = document.getElementById("pictureInput");
+    const imageContainer = document.getElementById("imageContainer");
+    const passwordImage = document.getElementById("passwordImage");
+
+    if (fileInput.files && fileInput.files[0]) {
+        const reader = new FileReader();
+
+        reader.onload = function(e) {
+            passwordImage.src = e.target.result;
+            imageContainer.style.display = "block";
+        };
+
+        reader.readAsDataURL(fileInput.files[0]);
+    }
+}
+
+function setClickPoint(event) {
+    const rect = event.target.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+
+    clickPoints.push({ x, y });
+
+    // Optional: Visually indicate the selected points
+    const point = document.createElement("div");
+    point.style.position = "absolute";
+    point.style.left = `${x}px`;
+    point.style.top = `${y}px`;
+    point.style.width = "10px";
+    point.style.height = "10px";
+    point.style.backgroundColor = "red";
+    point.style.borderRadius = "50%";
+    event.target.parentNode.appendChild(point);
+}
+
+function validatePicturePassword() {
+    const correctPoints = [
+        { x: 50, y: 60 }, // Replace with your desired points
+        { x: 100, y: 150 }
+    ];
+
+    const isValid = clickPoints.every((point, index) => {
+        return Math.abs(point.x - correctPoints[index].x) < 10 &&
+               Math.abs(point.y - correctPoints[index].y) < 10;
+    });
+
+    if (isValid) {
+        document.getElementById("level3").style.display = "none";
+        document.getElementById("successMessage").style.display = "block";
+    } else {
+        alert("Incorrect Picture Password! Please try again.");
+        clickPoints = []; // Reset the selection
+    }
+}
+
+</script>
+</body>
+</html>
+////////////////////////////////level3///////////////////////
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Combination Password</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+    /* styles.css */
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #121212;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+    color: #fff;
+}
+
+.container {
+    background-color: #1f1f1f;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
+    text-align: center;
+    width: 350px;
+}
+
+h2 {
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+    color: #ff6f61;
+}
+
+.level {
+    margin-bottom: 20px;
+}
+
+.colors {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.color-btn {
+    width: 60px;
+    height: 60px;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    margin: 0 10px;
+    transition: transform 0.2s ease;
+}
+
+.color-btn.red {
+    background-color: #ff4f4f;
+}
+
+.color-btn.green {
+    background-color: #4caf50;
+}
+
+.color-btn.blue {
+    background-color: #4285f4;
+}
+
+.color-btn:hover {
+    transform: scale(1.1);
+}
+
+.selected-colors {
+    margin-top: 20px;
+    text-align: center;
+}
+
+#colorDisplay {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.color-display-item {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin: 0 5px;
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    background-color: #ff6f61;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+button:hover {
+    background-color: #ffab91;
+    transform: scale(1.05);
+}
+</style>
+</head>
+<body>
+    <div class="container">
+        <h2>Level 2: Color Combination Password</h2>
+
+        <!-- Level 2 Color Combination -->
+        <div id="level2" class="level">
+            <h3>Select Your Color Combination</h3>
+            <div class="colors">
+                <button class="color-btn red" onclick="selectColor('red')"></button>
+                <button class="color-btn green" onclick="selectColor('green')"></button>
+                <button class="color-btn blue" onclick="selectColor('blue')"></button>
+            </div>
+            <div id="selectedColors" class="selected-colors">
+                <p>Selected Colors:</p>
+                <div id="colorDisplay"></div>
+            </div>
+            <button onclick="validateColorPassword()">Next</button>
+        </div>
+
+        <!-- Success Message -->
+        <div id="successMessage" style="display:none;">
+            <h3>Access Granted!</h3>
+            <p>You have successfully set and validated the color combination.</p>
+        </div>
+    </div>
+
+    <script src="scripts.js"></script>
+    <script>
+    // scripts.js
+
+// Array to store selected colors
+let selectedColors = [];
+
+// Function to handle color selection
+function selectColor(color) {
+    if (selectedColors.length < 3) {
+        selectedColors.push(color);
+        displaySelectedColors();
+    }
+}
+
+// Function to display selected colors
+function displaySelectedColors() {
+    const colorDisplay = document.getElementById('colorDisplay');
+    colorDisplay.innerHTML = ''; // Clear previous display
+    selectedColors.forEach(color => {
+        const colorDiv = document.createElement('div');
+        colorDiv.classList.add('color-display-item');
+        colorDiv.style.backgroundColor = color;
+        colorDisplay.appendChild(colorDiv);
+    });
+}
+
+// Function to validate the color password
+function validateColorPassword() {
+    // Define the correct color combination
+    const correctColors = ['red', 'green', 'blue']; // Replace with your correct combination
+
+    // Check if selected colors match the correct combination
+    if (selectedColors.length === 3 && selectedColors.every((color, index) => color === correctColors[index])) {
+        document.getElementById("level2").style.display = "none";
+        document.getElementById("successMessage").style.display = "block";
+    } else {
+        alert("Incorrect Color Combination! Please try again.");
+        selectedColors = []; // Reset the selection
+        displaySelectedColors(); // Update display
+    }
+}
+</script>
+</body>
+</html>
+/////////////////////////level3.////////
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Combination Password</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+    /* styles.css */
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #121212;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+    color: #fff;
+}
+
+.container {
+    background-color: #1f1f1f;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
+    text-align: center;
+    width: 350px;
+}
+
+h2 {
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+    color: #ff6f61;
+}
+
+.level {
+    margin-bottom: 20px;
+}
+
+.colors {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.color-btn {
+    width: 60px;
+    height: 60px;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    margin: 0 10px;
+    transition: transform 0.2s ease;
+}
+
+.color-btn.red {
+    background-color: #ff4f4f;
+}
+
+.color-btn.green {
+    background-color: #4caf50;
+}
+
+.color-btn.blue {
+    background-color: #4285f4;
+}
+
+.color-btn:hover {
+    transform: scale(1.1);
+}
+
+.selected-colors {
+    margin-top: 20px;
+    text-align: center;
+}
+
+#colorDisplay {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.color-display-item {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin: 0 5px;
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    background-color: #ff6f61;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+button:hover {
+    background-color: #ffab91;
+    transform: scale(1.05);
+}
+</style>
+</head>
+<body>
+    <div class="container">
+        <h2>Level 2: Color Combination Password</h2>
+
+        <!-- Level 2 Color Combination -->
+        <div id="level2" class="level">
+            <h3>Select Your Color Combination</h3>
+            <div class="colors">
+                <button class="color-btn red" onclick="selectColor('red')"></button>
+                <button class="color-btn green" onclick="selectColor('green')"></button>
+                <button class="color-btn blue" onclick="selectColor('blue')"></button>
+            </div>
+            <div id="selectedColors" class="selected-colors">
+                <p>Selected Colors:</p>
+                <div id="colorDisplay"></div>
+            </div>
+            <button onclick="validateColorPassword()">Next</button>
+        </div>
+
+        <!-- Success Message -->
+        <div id="successMessage" style="display:none;">
+            <h3>Access Granted!</h3>
+            <p>You have successfully set and validated the color combination.</p>
+        </div>
+    </div>
+
+    <script src="scripts.js"></script>
+    <script>
+    // scripts.js
+
+// Array to store selected colors
+let selectedColors = [];
+
+// Function to handle color selection
+function selectColor(color) {
+    if (selectedColors.length < 3) {
+        selectedColors.push(color);
+        displaySelectedColors();
+    }
+}
+
+// Function to display selected colors
+function displaySelectedColors() {
+    const colorDisplay = document.getElementById('colorDisplay');
+    colorDisplay.innerHTML = ''; // Clear previous display
+    selectedColors.forEach(color => {
+        const colorDiv = document.createElement('div');
+        colorDiv.classList.add('color-display-item');
+        colorDiv.style.backgroundColor = color;
+        colorDisplay.appendChild(colorDiv);
+    });
+}
+
+// Function to validate the color password
+function validateColorPassword() {
+    // Define the correct color combination
+    const correctColors = ['red', 'green', 'blue']; // Replace with your correct combination
+
+    // Check if selected colors match the correct combination
+    if (selectedColors.length === 3 && selectedColors.every((color, index) => color === correctColors[index])) {
+        document.getElementById("level2").style.display = "none";
+        document.getElementById("successMessage").style.display = "block";
+    } else {
+        alert("Incorrect Color Combination! Please try again.");
+        selectedColors = []; // Reset the selection
+        displaySelectedColors(); // Update display
+    }
+}
+</script>
+</body>
+</html>
